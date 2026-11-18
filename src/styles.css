@@ -62,10 +62,8 @@ p { margin: 0; }
 
 .hero-card {
   position: absolute;
-  top: var(--gutter); left: var(--gutter); right: var(--gutter);
-  height: var(--cardH);
-  border-radius: var(--r-xl);
-  clip-path: inset(0px 0px 0px 0px round 30px);
+  inset: 0;  /* edge to edge; the gutter + radius are animated in via clip-path */
+  clip-path: inset(0px 0px 0px 0px round 0px);
   overflow: hidden;
   background: #3a2414;
   will-change: clip-path;

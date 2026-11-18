@@ -13,7 +13,7 @@ import { createFramePlayer, frameSrc, FRAME_COUNT } from "../lib/frames";
 interface Point { x: number; y: number }
 interface HeadlinePose { l1: Point; l2: Point; s: number }
 interface Geometry {
-  clipA: string; clipC: string;
+  clipC: [number, number, number, number]; // final pill insets: top, right, bottom, left
   hA: number; hC: number; wA: number; wB: number; wC: number;
   yA: number; yB: number; yC: number;
   A: HeadlinePose; B: HeadlinePose;
@@ -65,7 +65,8 @@ export default function HeroStage({ stripId }: Props) {
         const W = window.innerWidth, H = window.innerHeight;
         const mobile = W <= 820;
         const g = mobile ? 10 : 16;
-        // Card starts full screen (inside the gutter frame); the frame sequence plays at that size
+        // The card element covers the whole viewport edge to edge while the frames play.
+        // Layout maths below is in "inner card" units (inside the gutter); `g` shifts it to viewport space.
         const cardH = H - 2 * g;
         root.style.setProperty("--cardH", `${cardH}px`);
         const frames = reduced ? 0 : Math.round(Math.max(H * 3.2, 2200));
@@ -102,13 +103,14 @@ export default function HeroStage({ stripId }: Props) {
         const cardHB = cardH - 0.5 * (cardH - pillH);
         const midB = navH + (cardHB - hA / 2 - navH) * (mobile ? 0.45 : 0.4);
         const B: HeadlinePose = { l1: { x: cx, y: midB - lh * sB * 0.5 }, l2: { x: cx, y: midB + lh * sB * 0.5 }, s: sB };
+        for (const pose of [A, B]) for (const pt of [pose.l1, pose.l2]) { pt.x += g; pt.y += g; }
 
         // Scroll distance after the frames: the strip travels from rest to ~30% of the viewport (frame 3)
         const stripTop = strip ? strip.getBoundingClientRect().top + window.scrollY : H;
 
         Object.assign(G, {
-          clipA: "inset(0px 0px 0px 0px round 30px)",
-          clipC: `inset(0px ${W - g - pillR}px ${cardH - pillH}px ${pillL - g}px round 24px)`,
+          // Square, borderless full screen during the frames; insets grow linearly as the card minimises
+          clipC: [g, W - pillR, H - g - pillH, pillL],
           hA,
           hC: mobile ? 58 : 66,
           wA: mobile ? W - 40 : Math.min(W * 0.77, 1400),
@@ -171,7 +173,16 @@ export default function HeroStage({ stripId }: Props) {
       });
 
       // Card: linear inset so the edges move in lockstep with scroll
-      tl.fromTo(els.card, { clipPath: () => G.clipA }, { clipPath: () => G.clipC, duration: 1 }, 0);
+      // Card shape: insets track scroll linearly; corners round off quickly the moment minimising starts
+      const shape = { p: 0, r: 0 };
+      const paintShape = () => {
+        const [t, r, b, l] = G.clipC.map((v) => (v * shape.p).toFixed(2));
+        els.card.style.clipPath = `inset(${t}px ${r}px ${b}px ${l}px round ${shape.r.toFixed(2)}px)`;
+      };
+      ScrollTrigger.addEventListener("refresh", paintShape);
+      tl.fromTo(shape, { p: 0 }, { p: 1, duration: 1, onUpdate: paintShape }, 0);
+      tl.fromTo(shape, { r: 0 }, { r: 30, duration: 0.08, ease: "power2.out", onUpdate: paintShape }, 0);
+      tl.to(shape, { r: 24, duration: 0.3, onUpdate: paintShape }, 0.7);
       tl.fromTo(els.media, { scale: 1.14 }, { scale: 1, duration: 1 }, 0);
 
       // Headline: x and y use different curves so the lines separate vertically before sliding together
@@ -205,6 +216,7 @@ export default function HeroStage({ stripId }: Props) {
       return () => {
         ScrollTrigger.removeEventListener("refreshInit", computeGeom);
         ScrollTrigger.removeEventListener("refresh", onRefresh);
+        ScrollTrigger.removeEventListener("refresh", paintShape);
         player.destroy();
         mm.revert();
       };
