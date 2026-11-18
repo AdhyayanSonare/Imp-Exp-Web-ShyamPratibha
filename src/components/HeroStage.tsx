@@ -1,9 +1,11 @@
 import { useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from "react";
 import { Icon, type IconName } from "./Icon";
 import { gsap, ScrollTrigger, useGSAP, prefersReducedMotion, scrollToTarget } from "../lib/motion";
-import { CONTACT, NAV_LINKS, QUOTE_CATEGORIES, QUOTE_QUANTITIES, img } from "../data/content";
+import { CONTACT, NAV_LINKS, QUOTE_CATEGORIES, QUOTE_QUANTITIES } from "../data/content";
+import { createFramePlayer, frameSrc, FRAME_COUNT } from "../lib/frames";
 
 /* Hero stage: fixed layer whose timeline is scrubbed by scroll.
+   Frame 0 → full-screen card plays the scroll-scrubbed frame sequence; nav sits attached at the top.
    Frame 1 → full-width card, one-line headline, full quote bar on the card edge.
    Frame 2 → card insets, headline stacks, bar narrows to icons.
    Frame 3 → card becomes the pill behind the nav links, icon bar docks below it (sticky header). */
@@ -16,6 +18,7 @@ interface Geometry {
   yA: number; yB: number; yC: number;
   A: HeadlinePose; B: HeadlinePose;
   dist: number;
+  frames: number;
 }
 
 interface Props { stripId: string }
@@ -24,6 +27,9 @@ export default function HeroStage({ stripId }: Props) {
   const stage = useRef<HTMLDivElement>(null);
   const card = useRef<HTMLDivElement>(null);
   const media = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const shell = useRef<HTMLDivElement>(null);
+  const floatingRef = useRef(false);
   const line1 = useRef<HTMLSpanElement>(null);
   const line2 = useRef<HTMLSpanElement>(null);
   const navLinks = useRef<HTMLElement>(null);
@@ -53,13 +59,17 @@ export default function HeroStage({ stripId }: Props) {
       const root = document.documentElement;
       const reduced = prefersReducedMotion();
       const G = {} as Geometry;
+      const player = createFramePlayer(canvas.current!);
 
       const computeGeom = () => {
         const W = window.innerWidth, H = window.innerHeight;
         const mobile = W <= 820;
         const g = mobile ? 10 : 16;
-        const cardH = Math.round(Math.max(H * (mobile ? 0.64 : 0.62), mobile ? 440 : 460));
+        // Card starts full screen (inside the gutter frame); the frame sequence plays at that size
+        const cardH = H - 2 * g;
         root.style.setProperty("--cardH", `${cardH}px`);
+        const frames = reduced ? 0 : Math.round(Math.max(H * 3.2, 2200));
+        root.style.setProperty("--vidSpace", `${frames}px`);
         const cardW = W - 2 * g;
         const navH = 84;
         const pillH = mobile ? 76 : 84;
@@ -93,7 +103,7 @@ export default function HeroStage({ stripId }: Props) {
         const midB = navH + (cardHB - hA / 2 - navH) * (mobile ? 0.45 : 0.4);
         const B: HeadlinePose = { l1: { x: cx, y: midB - lh * sB * 0.5 }, l2: { x: cx, y: midB + lh * sB * 0.5 }, s: sB };
 
-        // Scroll distance: the strip travels from rest to ~30% of the viewport (frame 3)
+        // Scroll distance after the frames: the strip travels from rest to ~30% of the viewport (frame 3)
         const stripTop = strip ? strip.getBoundingClientRect().top + window.scrollY : H;
 
         Object.assign(G, {
@@ -104,16 +114,30 @@ export default function HeroStage({ stripId }: Props) {
           wA: mobile ? W - 40 : Math.min(W * 0.77, 1400),
           wB: mobile ? Math.min(W - 80, 300) : Math.min(Math.max(W * 0.35, 560), 660),
           wC: mobile ? Math.min(W - 80, 260) : Math.min(Math.max(W * 0.33, 520), 600),
-          yA: cardBottom(0) - hA / 2,
+          yA: cardBottom(0) - hA - (mobile ? 18 : 30),
           yB: cardBottom(0.5) - hA / 2,
           yC: cardBottom(1) + (mobile ? 8 : 4),
           A, B,
-          dist: Math.max(260, stripTop - H * 0.3),
+          dist: Math.max(260, stripTop - H * 0.3 - frames),
+          frames,
         } satisfies Geometry);
       };
 
       computeGeom();
       ScrollTrigger.addEventListener("refreshInit", computeGeom);
+      const onRefresh = () => player.resize();
+      ScrollTrigger.addEventListener("refresh", onRefresh);
+
+      // Phase 1: frame sequence. Scrub lag eases the playhead into place, so it glides on after the wheel stops
+      const playhead = { f: 0 };
+      if (!reduced) {
+        gsap.to(playhead, {
+          f: FRAME_COUNT - 1,
+          ease: "none",
+          onUpdate: () => player.setPosition(playhead.f),
+          scrollTrigger: { trigger: document.body, start: 0, end: () => `+=${G.frames}`, scrub: 1.2, invalidateOnRefresh: true },
+        });
+      }
 
       gsap.set([els.l1, els.l2], { xPercent: -50, yPercent: -50, transformOrigin: "50% 50%" });
       gsap.set(els.bar, { xPercent: -50, x: 0 });
@@ -126,15 +150,21 @@ export default function HeroStage({ stripId }: Props) {
         defaults: { ease: "none" },
         scrollTrigger: {
           trigger: document.body,
-          start: 0,
-          end: () => `+=${G.dist}`,
-          scrub: reduced ? true : 0.7,
+          start: () => G.frames,
+          end: () => G.frames + G.dist,
+          scrub: reduced ? true : 1,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
             const compact = self.progress > 0.28;
             if (compact !== compactRef.current) {
               compactRef.current = compact;
               els.bar.classList.toggle("is-compact", compact);
+            }
+            // Nav detaches into a floating bar only once the card begins to minimise
+            const floating = self.progress > 0.04;
+            if (floating !== floatingRef.current) {
+              floatingRef.current = floating;
+              shell.current?.classList.toggle("is-floating", floating);
             }
           },
         },
@@ -174,6 +204,8 @@ export default function HeroStage({ stripId }: Props) {
 
       return () => {
         ScrollTrigger.removeEventListener("refreshInit", computeGeom);
+        ScrollTrigger.removeEventListener("refresh", onRefresh);
+        player.destroy();
         mm.revert();
       };
     },
@@ -213,9 +245,11 @@ export default function HeroStage({ stripId }: Props) {
   return (
     <>
       <div className="stage" ref={stage}>
+        <div className="nav-shell" ref={shell} aria-hidden="true" />
         <div className="hero-card" ref={card}>
           <div className="hero-media" ref={media}>
-            <img src={img("hero-port-sunset.jpg")} alt="" />
+            <img src={frameSrc(0)} alt="" />
+            <canvas className="hero-frames" ref={canvas} aria-hidden="true" />
           </div>
           <div className="hero-shade" />
           <h1 className="hero-title" aria-label="Rooted in India. Trusted worldwide.">
