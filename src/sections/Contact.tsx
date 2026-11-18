@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Icon } from "../components/Icon";
 import { CONTACT, NAV_LINKS, img } from "../data/content";
 
@@ -46,7 +47,7 @@ export function Footer() {
           <span className="brand-word">Pratibhashyam Exports Pvt Ltd</span>
         </a>
         <nav aria-label="Footer">
-          {NAV_LINKS.map((l) => <a key={l.href} href={l.href}>{l.label}</a>)}
+          {NAV_LINKS.map((l) => <Link key={l.href} to={l.href}>{l.label}</Link>)}
         </nav>
       </div>
       <div className="footer-bottom">

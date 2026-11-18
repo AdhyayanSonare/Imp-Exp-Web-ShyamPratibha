@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { Icon } from "../components/Icon";
 import Counter from "../components/Counter";
 import BlockHead from "../components/BlockHead";
@@ -17,12 +18,12 @@ export default function Products() {
       <div className="bento">
         <AgriSwitcher />
 
-        <CategoryTile image="cat-nuts.jpg" alt="Assorted nuts and seeds" title="Nuts & Seeds"
+        <CategoryTile to="/products/nuts-seeds" image="cat-nuts.jpg" alt="Assorted nuts and seeds" title="Nuts & Seeds"
           text="Cashew kernels, sesame, flax, chia, psyllium and more. 14 lines, freshly sourced." />
-        <CategoryTile image="cat-pharma.jpg" alt="Tablets and capsules" title="Pharmaceuticals"
+        <CategoryTile to="/products/pharmaceuticals" image="cat-pharma.jpg" alt="Tablets and capsules" title="Pharmaceuticals"
           text="15 therapeutic groups, from APIs and antibiotics to OTC and nutrition, with full documentation." />
 
-        <article className="tile tile-rice c-4" data-reveal>
+        <Link to="/products/agriculture/grains-pulses-cereals" className="tile tile-rice c-4" data-reveal>
           <img src={img("rice.jpg")} alt="Raw basmati rice" loading="lazy" />
           <div className="tile-rice-body">
             <p className="eyebrow eyebrow-light">Basmati spotlight</p>
@@ -32,9 +33,9 @@ export default function Products() {
             </div>
             <p className="tile-foot">Steam · Raw · Sella · Golden Sella · Creamy Sella</p>
           </div>
-        </article>
+        </Link>
 
-        <CategoryTile image="cat-textile.jpg" alt="Fabric on an industrial loom" title="Textiles"
+        <CategoryTile to="/products/textile" image="cat-textile.jpg" alt="Fabric on an industrial loom" title="Textiles"
           text="Fabrics, yarn and home textiles made to international standards. Range shared on request." />
 
         <CatalogueTile />
@@ -42,6 +43,16 @@ export default function Products() {
     </section>
   );
 }
+
+const AGRI_PATHS: Record<AgriKey, string> = {
+  fruits: "/products/agriculture/fruits-vegetables",
+  spices: "/products/agriculture/dry-spices",
+  grains: "/products/agriculture/grains-pulses-cereals",
+  frozen: "/products/agriculture/frozen-vegetables",
+  dried: "/products/agriculture/dried-dehydrated",
+  cocopeat: "/products/agriculture/cocopeat",
+  makhana: "/products/agriculture/makhana",
+};
 
 function AgriSwitcher() {
   const [active, setActive] = useState<AgriKey>("fruits");
@@ -77,7 +88,7 @@ function AgriSwitcher() {
           <span className="chip chip-glass">Agriculture · {AGRI_LINES.length} lines</span>
           <span className="agri-count"><b>{line.count}</b> products</span>
         </div>
-        <h3>{line.title}</h3>
+        <h3><Link to={AGRI_PATHS[line.key]}>{line.title}</Link></h3>
         <ul className="agri-list">
           {line.items.map((item) => <li key={item}>{item}</li>)}
         </ul>
@@ -94,16 +105,16 @@ function AgriSwitcher() {
   );
 }
 
-function CategoryTile({ image, alt, title, text }: { image: string; alt: string; title: string; text: string }) {
+function CategoryTile({ to, image, alt, title, text }: { to: string; image: string; alt: string; title: string; text: string }) {
   return (
-    <article className="tile tile-cat c-4" data-reveal>
+    <Link to={to} className="tile tile-cat c-4" data-reveal>
       <img src={img(image)} alt={alt} loading="lazy" />
       <div className="tile-cat-body">
         <h3>{title}</h3>
         <p>{text}</p>
       </div>
       <span className="tile-arrow"><Icon name="arrow-ur" /></span>
-    </article>
+    </Link>
   );
 }
 
@@ -124,7 +135,7 @@ function CatalogueTile() {
       <div className="mini-bars" ref={bars} aria-hidden="true">
         {CATALOGUE_COUNTS.map((v, i) => <i key={i} style={{ height: `${(v / max) * 100}%` }} />)}
       </div>
-      <a className="btn btn-dark" href="#contact">Request full catalogue <Icon name="arrow" /></a>
+      <Link className="btn btn-dark" to="/contact">Request full catalogue <Icon name="arrow" /></Link>
     </article>
   );
 }

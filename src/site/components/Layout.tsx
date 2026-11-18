@@ -8,9 +8,6 @@ import "../site.css";
 /* Shared shell for every subpage. Mirrors the homepage's docked header (brand · image pill · actions). */
 
 export default function SiteLayout() {
-  const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
-
   return (
     <div className="sp">
       <SiteIconSprite />

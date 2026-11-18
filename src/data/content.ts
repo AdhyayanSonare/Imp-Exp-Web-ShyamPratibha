@@ -12,11 +12,11 @@ export const CONTACT = {
 } as const;
 
 export const NAV_LINKS = [
-  { href: "#about", label: "About" },
-  { href: "#products", label: "Products" },
-  { href: "#process", label: "How we work" },
-  { href: "#training", label: "EXIM Training" },
-  { href: "#contact", label: "Contact" },
+  { href: "/about-us", label: "About" },
+  { href: "/products", label: "Products" },
+  { href: "/exim-training", label: "EXIM Training" },
+  { href: "/gallery", label: "Gallery" },
+  { href: "/contact", label: "Contact" },
 ] as const;
 
 export type AgriKey = "fruits" | "spices" | "grains" | "frozen" | "dried" | "cocopeat" | "makhana";

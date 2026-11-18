@@ -1,4 +1,5 @@
 import { useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { Icon, type IconName } from "./Icon";
 import { gsap, ScrollTrigger, useGSAP, prefersReducedMotion, scrollToTarget } from "../lib/motion";
 import { CONTACT, NAV_LINKS, QUOTE_CATEGORIES, QUOTE_QUANTITIES, img } from "../data/content";
@@ -230,11 +231,11 @@ export default function HeroStage({ stripId }: Props) {
             <span className="brand-word">Pratibhashyam</span>
           </a>
           <nav className="nav-links" ref={navLinks} aria-label="Primary">
-            {NAV_LINKS.map((l) => <a key={l.href} href={l.href}>{l.label}</a>)}
+            {NAV_LINKS.map((l) => <Link key={l.href} to={l.href}>{l.label}</Link>)}
           </nav>
           <div className="nav-right" ref={navRight}>
             <a className="nav-phone" href={CONTACT.phoneHref}>{CONTACT.phoneDisplay}</a>
-            <a className="nav-cta" href="#contact" ref={navCta}>Get a quote</a>
+            <Link className="nav-cta" to="/contact" ref={navCta}>Get a quote</Link>
             <button
               className="nav-menu"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -276,7 +277,7 @@ export default function HeroStage({ stripId }: Props) {
 
       {menuOpen && (
         <div className="sheet" onClick={(e) => (e.target as HTMLElement).closest("a") && setMenuOpen(false)}>
-          {NAV_LINKS.map((l) => <a key={l.href} href={l.href}>{l.label}</a>)}
+          {NAV_LINKS.map((l) => <Link key={l.href} to={l.href}>{l.label}</Link>)}
         </div>
       )}
     </>
