@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Icon } from "../components/Icon";
 import Counter from "../components/Counter";
 import BlockHead from "../components/BlockHead";
@@ -17,7 +18,7 @@ export default function About() {
           <img src={img("ops-field.jpg")} alt="The Pratibhashyam team on a farm visit" loading="lazy" />
           <div className="tile-photo-body">
             <span className="chip chip-glass"><Icon name="pin" />Nagpur, Maharashtra</span>
-            <h3>Rooted in India, trusted across the world.</h3>
+            <h3><Link to="/about-us">Rooted in India, trusted across the world.</Link></h3>
             <p>Pratibhashyam Exports Pvt Ltd connects Indian farmers, producers and manufacturers with importers abroad, through direct sourcing, honest dealing and consistent quality.</p>
           </div>
         </article>

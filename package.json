@@ -7,20 +7,23 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "docs:content-map": "esbuild scripts/gen-content-map.ts --bundle --platform=node --format=esm --log-level=warning \"--define:import.meta.env.BASE_URL=\\\"/\\\"\" --outfile=scripts/.gen-content-map.mjs && node scripts/.gen-content-map.mjs && rm scripts/.gen-content-map.mjs"
   },
   "dependencies": {
     "@gsap/react": "2.1.1",
     "gsap": "3.12.5",
     "lenis": "1.1.13",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "react-router-dom": "6.28.0"
   },
   "devDependencies": {
     "@types/react": "18.3.12",
     "@types/react-dom": "18.3.1",
     "@vitejs/plugin-react": "4.3.3",
     "typescript": "5.6.3",
-    "vite": "5.4.10"
+    "vite": "5.4.10",
+    "esbuild": "0.21.5"
   }
 }

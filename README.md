@@ -7,6 +7,7 @@ npm install
 npm run dev       # http://localhost:5173
 npm run build     # type-check + production build → dist/
 npm run preview   # serve the production build
+npm run docs:content-map   # regenerate docs/page-content-map.md from the page data
 ```
 
 ## Structure
@@ -27,6 +28,28 @@ public/
   img/                  photography (company photos + Wikimedia Commons, see CREDITS.md)
   CREDITS.md            required attribution for CC-licensed photos
 ```
+
+## Subpages
+
+`/` is the homepage (`src/App.tsx`, untouched). Every other route is a lazily loaded subpage in `src/site/`:
+
+```
+src/site/
+  routes.tsx                   16 pages + redirects from the old WordPress URLs + 404
+  site.css                     subpage styles, all scoped under .sp
+  data/catalogue.ts            category copy, groups, feature modules
+  data/products.generated.ts   all 178 product entries scraped from the live site
+  data/pages.ts                About, Products, Agriculture, EXIM, Gallery, Contact copy
+  data/worldMask.generated.ts  dotted world map (Natural Earth 110m)
+  components/                  Layout (header, mega menu, footer), ui, Catalogue, SiteIcon
+  pages/                       About, Products, Agriculture, CategoryPage, Exim, Gallery, Contact, NotFound
+docs/
+  source-content-inventory.md  everything on the original site, by URL
+  page-content-map.md          what goes where, plus the copy used (generated)
+  client-content-needed.md     open questions for the client
+```
+
+Production hosting needs a single-page-app fallback (serve `index.html` for every path).
 
 ## Before launch
 

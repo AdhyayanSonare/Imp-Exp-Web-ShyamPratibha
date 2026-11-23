@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { Icon } from "../components/Icon";
 import BlockHead from "../components/BlockHead";
 import { prefersReducedMotion } from "../lib/motion";
@@ -14,7 +15,7 @@ export default function People() {
           <div className="avatars">
             {DIRECTOR_PHOTOS.map((src) => <img key={src} src={src} alt="" loading="lazy" />)}
           </div>
-          <h3>Four directors, one commitment: quality exports delivered on time.</h3>
+          <h3><Link to="/about-us">Four directors, one commitment: quality exports delivered on time.</Link></h3>
           <p className="leader-names">{DIRECTOR_NAMES.join(" · ")}</p>
           <div className="leader-roles">
             {DIRECTOR_ROLES.map((r) => <span key={r}>{r}</span>)}
@@ -32,7 +33,7 @@ export default function People() {
         <article className="tile tile-training c-8 r-2" data-reveal>
           <div className="training-head">
             <span className="chip chip-glass"><Icon name="cap" />EXIM Training · Nagpur</span>
-            <h3>Learn export–import from people who ship every month.</h3>
+            <h3><Link to="/exim-training">Learn export–import from people who ship every month.</Link></h3>
             <p>A practical, 20-module programme for complete beginners: students, farmers, traders and business owners. Real documents, live consignments and actual case studies.</p>
           </div>
           <div className="modules" aria-label="Sample modules">
@@ -86,7 +87,7 @@ function Gallery() {
         ))}
       </div>
       <div className="gallery-meta">
-        <p className="eyebrow">Behind the scenes</p>
+        <p className="eyebrow"><Link to="/gallery">Behind the scenes</Link></p>
         <div className="gallery-dots">
           {GALLERY.map((g, i) => (
             <button key={g.src} aria-label={`Photo ${i + 1}: ${g.caption}`} aria-current={i === index}
