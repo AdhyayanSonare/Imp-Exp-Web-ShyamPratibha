@@ -5,6 +5,7 @@ import { TOP_CATEGORIES } from "../site/data/catalogue";
 import { FARM_TO_CONTAINER } from "../site/data/pages";
 import { gsap, ScrollTrigger, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { ABOUT_INTRO, CERTIFICATES, COMPANY, DIRECTORS, PRESENCE, QUOTE, STATS, WHY_US } from "./content";
+import EarthHero from "./EarthHero";
 import { Footer, Hl, QuoteForm, SIcon, WorldMap, useReveal } from "./ui";
 
 export default function Home() {
@@ -12,7 +13,7 @@ export default function Home() {
   return (
     <div className="v2" ref={scope}>
       <SiteIconSprite />
-      <HeroSlot />
+      <EarthHero />
       <main id="main">
         <About />
         <Products />
@@ -25,15 +26,6 @@ export default function Home() {
       </main>
       <Footer />
     </div>
-  );
-}
-
-/* Reserved for the Earth hero (matte black, glow, Blender model, SVG overlay), built by a teammate. Drop it in here. */
-function HeroSlot() {
-  return (
-    <section className="v2-hero-slot" id="hero" aria-label="Pratibhashyam Exports">
-      {import.meta.env.DEV && <p className="v2-dev-note">Earth hero section goes here (built separately)</p>}
-    </section>
   );
 }
 
